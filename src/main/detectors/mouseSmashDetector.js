@@ -3,106 +3,71 @@
 const settings = require('../settingsStore');
 
 /**
- * Detects a mouse "smash" — distinct from fast movement.
- *
- * Algorithm: rolling velocity buffer (~200 ms window).
- *
- *   A smash fires when BOTH of the following are true:
- *   1. Peak speed in the recent window exceeds the user threshold (px/s).
- *      This means the mouse was actually moving fast — not just a micro-jerk.
- *   2. Current speed drops to < DROP_RATIO of that peak (default 15%).
- *      i.e., the mouse suddenly slammed to a stop.
- *
- *   OR: sharp direction reversal while moving fast:
- *   - dot(v_prev, v_curr) / (|v_prev| * |v_curr|) < REVERSAL_COS (< -0.7 = >135°)
- *   - AND both speeds exceed MIN_REVERSAL_SPEED (40% of threshold)
- *
- * This cleanly avoids false-triggering on sustained fast movement,
- * which never has a velocity collapse or sharp reversal.
+ * Desk Destroyer - fires on either of these conditions:
+ *  1. MULTI-KEY: N or more keys pressed within KEYS_WINDOW_MS of each other.
+ *  2. DUAL CLICK: left + right mouse buttons both down within DUAL_CLICK_MS.
  */
 
-const WINDOW_MS       = 200;   // rolling window to track peak speed
-const DROP_RATIO      = 0.15;  // current speed must be < 15% of peak
-const REVERSAL_COS    = -0.70; // cos(135°) — direction must flip at least 135°
-const MIN_SPEED_RATIO = 0.40;  // reversal: both samples must be >= 40% of threshold
+const KEYS_WINDOW_MS = 150;
+const DUAL_CLICK_MS  = 200;
 
 class MouseSmashDetector {
   constructor(onTrigger) {
     this.onTrigger    = onTrigger;
-    this._buf         = []; // { vx, vy, speed, t }
-    this._lastX       = null;
-    this._lastY       = null;
-    this._lastTime    = null;
+    this._heldKeys    = new Map();
+    this._leftDown    = 0;
+    this._rightDown   = 0;
     this._lastTrigger = 0;
   }
 
-  handleMove(x, y) {
+  handleMove(_x, _y) {}
+
+  handleKeyDown(keycode) {
     if (!settings.isEnabled('mouseSmash')) return;
-
-    const now = Date.now();
-
-    if (this._lastX !== null) {
-      const dt = now - this._lastTime;
-      if (dt <= 0) {
-        this._lastX = x; this._lastY = y; this._lastTime = now;
-        return;
-      }
-
-      const vx    = (x - this._lastX) / dt; // px/ms
-      const vy    = (y - this._lastY) / dt;
-      const speed = Math.sqrt(vx * vx + vy * vy) * 1000; // px/s
-
-      // Prune samples outside the rolling window
-      this._buf = this._buf.filter(s => now - s.t <= WINDOW_MS);
-      this._buf.push({ vx, vy, speed, t: now });
-
-      const threshold = settings.getThreshold('mouseSmash'); // px/s
-      const cooldown  = settings.getCooldown('mouseSmash');
-      const peakSpeed = Math.max(...this._buf.map(s => s.speed));
-
-      let triggered = false;
-
-      // ── Test 1: sudden stop (velocity collapse) ──────────────────────────
-      if (peakSpeed >= threshold && speed < peakSpeed * DROP_RATIO) {
-        triggered = true;
-      }
-
-      // ── Test 2: sharp direction reversal ─────────────────────────────────
-      if (!triggered && this._buf.length >= 2) {
-        const prev    = this._buf[this._buf.length - 2];
-        const minSpd  = threshold * MIN_SPEED_RATIO;
-
-        if (prev.speed >= minSpd && speed >= minSpd) {
-          const dot     = prev.vx * vx + prev.vy * vy;
-          const magProd = (prev.speed / 1000) * (speed / 1000);
-          if (magProd > 0 && dot / magProd < REVERSAL_COS) {
-            triggered = true;
-          }
-        }
-      }
-
-      if (triggered && now - this._lastTrigger > cooldown) {
-        this._lastTrigger = now;
-        // Reset rolling window so next smash is measured fresh
-        this._buf      = [];
-        this._lastX    = null;
-        this._lastY    = null;
-        this._lastTime = null;
-        this.onTrigger('mouseSmash', { peakSpeed: Math.round(peakSpeed), currentSpeed: Math.round(speed) });
-        return;
-      }
+    const now      = Date.now();
+    this._heldKeys.set(keycode, now);
+    const required     = settings.getThreshold('mouseSmash') ?? 3;
+    const simultaneous = [...this._heldKeys.values()].filter(t => now - t <= KEYS_WINDOW_MS);
+    if (simultaneous.length >= required) {
+      this._fire({ reason: 'multikey', count: simultaneous.length });
     }
+  }
 
-    this._lastX    = x;
-    this._lastY    = y;
-    this._lastTime = now;
+  handleKeyUp(keycode) {
+    this._heldKeys.delete(keycode);
+  }
+
+  handleMouseDown(button) {
+    if (!settings.isEnabled('mouseSmash')) return;
+    const now = Date.now();
+    if (button === 1) this._leftDown  = now;
+    if (button === 2) this._rightDown = now;
+    if (this._leftDown && this._rightDown &&
+        Math.abs(this._leftDown - this._rightDown) <= DUAL_CLICK_MS) {
+      this._fire({ reason: 'dualclick' });
+    }
+  }
+
+  handleMouseUp(button) {
+    if (button === 1) this._leftDown  = 0;
+    if (button === 2) this._rightDown = 0;
+  }
+
+  _fire(data) {
+    const now      = Date.now();
+    const cooldown = settings.getCooldown('mouseSmash');
+    if (now - this._lastTrigger <= cooldown) return;
+    this._lastTrigger = now;
+    this._heldKeys.clear();
+    this._leftDown  = 0;
+    this._rightDown = 0;
+    this.onTrigger('mouseSmash', data);
   }
 
   reset() {
-    this._buf      = [];
-    this._lastX    = null;
-    this._lastY    = null;
-    this._lastTime = null;
+    this._heldKeys.clear();
+    this._leftDown  = 0;
+    this._rightDown = 0;
   }
 }
 

@@ -7,20 +7,20 @@ const TRIGGER_META = {
     description: 'You move that mouse like it owes you money 🏃',
     thresholdLabel: 'Speed threshold (px/s)',
     thresholdMin: 200,
-    thresholdMax: 5000,
-    thresholdStep: 100,
-    thresholdDefault: 1500,
+    thresholdMax: 15000,
+    thresholdStep: 200,
+    thresholdDefault: 10000,
     hasWindow: false
   },
   mouseSmash: {
     label: 'DESK DESTROYER',
     icon: '💀',
-    description: 'SLAM that mouse. Hurt it. It deserves it. 🔨',
-    thresholdLabel: 'Min peak speed to qualify (px/s)',
-    thresholdMin: 100,
-    thresholdMax: 3000,
-    thresholdStep: 50,
-    thresholdDefault: 600,
+    description: '3+ keys at once ⌨️ · or left+right click together 🖱️',
+    thresholdLabel: 'Keys required (simultaneous)',
+    thresholdMin: 2,
+    thresholdMax: 6,
+    thresholdStep: 1,
+    thresholdDefault: 3,
     hasWindow: false
   },
   keyboardSmash: {
@@ -31,7 +31,7 @@ const TRIGGER_META = {
     thresholdMin: 2,
     thresholdMax: 20,
     thresholdStep: 1,
-    thresholdDefault: 6,
+    thresholdDefault: 10,
     windowLabel: 'Window (ms)',
     windowMin: 100,
     windowMax: 2000,
@@ -332,9 +332,9 @@ async function applyBackground(bg) {
   const preview = document.getElementById('bg-preview');
 
   let imagePath = bg?.imagePath ?? null;
-  const opacity = bg?.opacity   ?? 0.25;
+  const opacity = bg?.opacity   ?? 0.6;
   const blur    = bg?.blur      ?? 0;
-  const fit     = bg?.fit       ?? 'cover';
+  const fit     = bg?.fit       ?? 'contain';
 
   // Resolve relative paths (e.g. assets/bg.png) via main process
   if (imagePath && !imagePath.match(/^[A-Za-z]:[\\\/]/) && !imagePath.startsWith('/')) {
@@ -345,9 +345,17 @@ async function applyBackground(bg) {
 
   if (imagePath) {
     const url = `file:///${imagePath.replace(/\\/g, '/')}`;
-    layer.style.backgroundImage = `url("${url}")`;
-    layer.style.filter          = blur > 0 ? `blur(${blur}px)` : '';
-    layer.style.backgroundSize  = fit === 'stretch' ? '100% 100%' : fit === 'center' ? 'auto' : fit;
+    layer.style.backgroundImage    = `url("${url}")`;
+    layer.style.filter             = blur > 0 ? `blur(${blur}px)` : '';
+    layer.style.backgroundPosition = 'center top';
+    layer.style.backgroundRepeat   = 'no-repeat';
+    if (fit === 'stretch') {
+      layer.style.backgroundSize = '100% 100%';
+    } else if (fit === 'center') {
+      layer.style.backgroundSize = 'auto';
+    } else {
+      layer.style.backgroundSize = fit; // 'contain' or 'cover'
+    }
     preview.innerHTML = `<img src="${url}" alt="bg preview">`;
   } else {
     layer.style.backgroundImage = '';

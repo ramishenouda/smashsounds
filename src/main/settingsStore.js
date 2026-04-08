@@ -8,9 +8,9 @@ const schema = {
     type: 'object',
     properties: {
       imagePath: { type: ['string', 'null'], default: 'assets/bg.png' },
-      opacity:   { type: 'number', default: 0.25 },
+      opacity:   { type: 'number', default: 0.6 },
       blur:      { type: 'number', default: 0 },
-      fit:       { type: 'string', default: 'cover' }
+      fit:       { type: 'string', default: 'contain' }
     },
     default: {}
   },
@@ -21,8 +21,8 @@ const schema = {
         type: 'object',
         properties: {
           enabled:   { type: 'boolean', default: true },
-          threshold: { type: 'number',  default: 1500 },
-          cooldown:  { type: 'number',  default: 500 },
+          threshold: { type: 'number',  default: 10000 },
+          cooldown:  { type: 'number',  default: 2500 },
           volume:    { type: 'number',  default: 1.0 },
           duration:  { type: 'number',  default: 0 },
           soundPath: { type: ['string', 'null'], default: null }
@@ -33,8 +33,8 @@ const schema = {
         type: 'object',
         properties: {
           enabled:   { type: 'boolean', default: true },
-          threshold: { type: 'number',  default: 600 },
-          cooldown:  { type: 'number',  default: 500 },
+          threshold: { type: 'number',  default: 2500 },
+          cooldown:  { type: 'number',  default: 2000 },
           volume:    { type: 'number',  default: 1.0 },
           duration:  { type: 'number',  default: 0 },
           soundPath: { type: ['string', 'null'], default: null }

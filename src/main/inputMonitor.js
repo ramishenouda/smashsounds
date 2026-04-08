@@ -27,12 +27,22 @@ function start(triggerCallback) {
     smashDetector.handleMove(e.x, e.y);
   });
 
-  uIOhook.on('mousedown', () => {
+  uIOhook.on('mousedown', (e) => {
     clickDetector.handleClick();
+    smashDetector.handleMouseDown(e.button);
   });
 
-  uIOhook.on('keydown', () => {
+  uIOhook.on('mouseup', (e) => {
+    smashDetector.handleMouseUp(e.button);
+  });
+
+  uIOhook.on('keydown', (e) => {
     kbDetector.handleKeyDown();
+    smashDetector.handleKeyDown(e.keycode);
+  });
+
+  uIOhook.on('keyup', (e) => {
+    smashDetector.handleKeyUp(e.keycode);
   });
 
   uIOhook.start();

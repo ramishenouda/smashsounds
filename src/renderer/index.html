@@ -134,7 +134,6 @@
       flex-direction: column;
       gap: 14px;
       position: relative;
-      z-index: 1;
     }
     main::-webkit-scrollbar { width: 5px; }
     main::-webkit-scrollbar-track { background: transparent; }
@@ -422,20 +421,29 @@
 
     /* ── Background image layer ── */
     #bg-layer {
-      position: fixed;
+      position: absolute;
       inset: 0;
-      z-index: -1;
-      background-size: cover;
-      background-position: center;
+      z-index: 0;
+      background-size: contain;
+      background-position: center top;
       background-repeat: no-repeat;
       transition: opacity 0.4s, filter 0.4s;
+      pointer-events: none;
     }
     #bg-overlay {
-      position: fixed;
+      position: absolute;
       inset: 0;
-      z-index: -1;
+      z-index: 0;
       background: var(--bg);
       transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    main {
+      position: relative;
+    }
+    main > *:not(#bg-layer):not(#bg-overlay) {
+      position: relative;
+      z-index: 1;
     }
 
     /* ── Background panel ── */
@@ -511,9 +519,6 @@
   </style>
 </head>
 <body>
-  <div id="bg-overlay"></div>
-  <div id="bg-layer"></div>
-
   <header>
     <span class="header-skull">💀</span>
     <h1>SmashMoans</h1>
@@ -524,6 +529,8 @@
   </header>
 
   <main>
+    <div id="bg-overlay"></div>
+    <div id="bg-layer"></div>
     <div class="notice" id="platform-notice"></div>
 
     <!-- Background customization panel -->
@@ -546,7 +553,7 @@
         <label class="field-label">Overlay darkness
           <span class="field-value" id="bg-opacity-val">75%</span>
         </label>
-        <input type="range" class="slider" id="bg-opacity" min="0" max="100" step="5" value="75">
+        <input type="range" class="slider" id="bg-opacity" min="0" max="100" step="5" value="60">
       </div>
       <div class="field-group">
         <label class="field-label">Blur
@@ -559,8 +566,8 @@
           <span class="field-value" id="bg-fit-val">Cover</span>
         </label>
         <select id="bg-fit" style="background:#1a1a2e;color:#f0f0ff;border:1px solid #ffffff22;border-radius:6px;padding:4px 8px;font-size:0.75rem;cursor:pointer;outline:none;">
-          <option value="cover">Cover (fill)</option>
-          <option value="contain">Contain (fit)</option>
+          <option value="cover">Cover (fill &amp; crop)</option>
+          <option value="contain" selected>Contain (full image)</option>
           <option value="center">Center (original size)</option>
           <option value="stretch">Stretch</option>
         </select>
