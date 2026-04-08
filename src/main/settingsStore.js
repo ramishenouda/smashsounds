@@ -4,6 +4,16 @@
 const Store = require('electron-store').default ?? require('electron-store');
 
 const schema = {
+  background: {
+    type: 'object',
+    properties: {
+      imagePath: { type: ['string', 'null'], default: 'assets/bg.png' },
+      opacity:   { type: 'number', default: 0.25 },
+      blur:      { type: 'number', default: 0 },
+      fit:       { type: 'string', default: 'cover' }
+    },
+    default: {}
+  },
   triggers: {
     type: 'object',
     properties: {
@@ -64,6 +74,14 @@ const schema = {
 
 const store = new Store({ schema });
 
+function getBackground() {
+  return store.get('background');
+}
+
+function saveBackground(bg) {
+  store.set('background', bg);
+}
+
 function getSettings() {
   return store.get('triggers');
 }
@@ -93,6 +111,8 @@ function getCooldown(triggerId) {
 }
 
 module.exports = {
+  getBackground,
+  saveBackground,
   getSettings,
   saveSettings,
   getSoundPath,

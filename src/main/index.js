@@ -42,6 +42,23 @@ function createWindow() {
 
 ipcMain.handle('settings:get', () => store.getSettings());
 
+ipcMain.handle('background:get', () => store.getBackground());
+
+ipcMain.handle('background:save', (_event, bg) => {
+  store.saveBackground(bg);
+});
+
+ipcMain.handle('background:selectImage', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    title: 'Choose Background Image',
+    filters: [
+      { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif'] }
+    ],
+    properties: ['openFile']
+  });
+  return canceled ? null : filePaths[0];
+});
+
 ipcMain.handle('settings:save', (_event, triggers) => {
   store.saveSettings(triggers);
 });

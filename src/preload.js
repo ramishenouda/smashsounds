@@ -8,15 +8,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('trigger', (_event, triggerId, data) => callback(triggerId, data));
   },
 
-  // Get current settings object
-  getSettings: () => ipcRenderer.invoke('settings:get'),
+  // Trigger settings
+  getSettings:    () => ipcRenderer.invoke('settings:get'),
+  saveSettings:   (triggers) => ipcRenderer.invoke('settings:save', triggers),
+  selectSoundFile:(triggerId) => ipcRenderer.invoke('settings:selectSound', triggerId),
+  resolveAssetPath:(relativePath) => ipcRenderer.invoke('assets:resolve', relativePath),
 
-  // Save updated settings object
-  saveSettings: (triggers) => ipcRenderer.invoke('settings:save', triggers),
-
-  // Open OS file dialog and return selected path (or null if cancelled)
-  selectSoundFile: (triggerId) => ipcRenderer.invoke('settings:selectSound', triggerId),
-
-  // Resolve a relative asset path to an absolute path
-  resolveAssetPath: (relativePath) => ipcRenderer.invoke('assets:resolve', relativePath)
+  // Background settings
+  getBackground:      () => ipcRenderer.invoke('background:get'),
+  saveBackground:     (bg) => ipcRenderer.invoke('background:save', bg),
+  selectBgImage:      () => ipcRenderer.invoke('background:selectImage')
 });

@@ -69,69 +69,72 @@ function buildCard(triggerId, meta, cfg) {
       <div class="card-title">
         <span class="card-icon">${meta.icon}</span>
         <span>${meta.label}</span>
+        <span class="card-chevron">▼</span>
       </div>
-      <label class="toggle">
+      <label class="toggle" onclick="event.stopPropagation()">
         <input type="checkbox" class="toggle-input" id="enabled-${triggerId}" ${cfg.enabled ? 'checked' : ''}>
         <span class="toggle-slider"></span>
       </label>
     </div>
-    <p class="card-desc">${meta.description}</p>
 
-    <div class="card-divider"></div>
-    <div class="section-label">⚙ Detection</div>
+    <div class="card-body">
+      <p class="card-desc">${meta.description}</p>
 
-    <div class="field-group">
-      <label class="field-label" for="threshold-${triggerId}">
-        ${meta.thresholdLabel}
-        <span class="field-value" id="threshold-val-${triggerId}">${cfg.threshold ?? meta.thresholdDefault}</span>
-      </label>
-      <input type="range" class="slider" id="threshold-${triggerId}"
-        min="${meta.thresholdMin}" max="${meta.thresholdMax}" step="${meta.thresholdStep}"
-        value="${cfg.threshold ?? meta.thresholdDefault}">
-    </div>
+      <div class="card-divider"></div>
+      <div class="section-label">⚙ Detection</div>
 
-    ${meta.hasWindow ? `
-    <div class="field-group">
-      <label class="field-label" for="window-${triggerId}">
-        ${meta.windowLabel}
-        <span class="field-value" id="window-val-${triggerId}">${cfg.windowMs ?? meta.windowDefault}</span>
-      </label>
-      <input type="range" class="slider" id="window-${triggerId}"
-        min="${meta.windowMin}" max="${meta.windowMax}" step="${meta.windowStep}"
-        value="${cfg.windowMs ?? meta.windowDefault}">
-    </div>` : ''}
+      <div class="field-group">
+        <label class="field-label" for="threshold-${triggerId}">
+          ${meta.thresholdLabel}
+          <span class="field-value" id="threshold-val-${triggerId}">${cfg.threshold ?? meta.thresholdDefault}</span>
+        </label>
+        <input type="range" class="slider" id="threshold-${triggerId}"
+          min="${meta.thresholdMin}" max="${meta.thresholdMax}" step="${meta.thresholdStep}"
+          value="${cfg.threshold ?? meta.thresholdDefault}">
+      </div>
 
-    <div class="field-group">
-      <label class="field-label">Cooldown (ms)
-        <span class="field-value" id="cooldown-val-${triggerId}">${cfg.cooldown ?? 500}</span>
-      </label>
-      <input type="range" class="slider" id="cooldown-${triggerId}"
-        min="100" max="3000" step="50"
-        value="${cfg.cooldown ?? 500}">
-    </div>
+      ${meta.hasWindow ? `
+      <div class="field-group">
+        <label class="field-label" for="window-${triggerId}">
+          ${meta.windowLabel}
+          <span class="field-value" id="window-val-${triggerId}">${cfg.windowMs ?? meta.windowDefault}</span>
+        </label>
+        <input type="range" class="slider" id="window-${triggerId}"
+          min="${meta.windowMin}" max="${meta.windowMax}" step="${meta.windowStep}"
+          value="${cfg.windowMs ?? meta.windowDefault}">
+      </div>` : ''}
 
-    <div class="card-divider"></div>
-    <div class="section-label">🔊 Sound</div>
+      <div class="field-group">
+        <label class="field-label">Cooldown (ms)
+          <span class="field-value" id="cooldown-val-${triggerId}">${cfg.cooldown ?? 500}</span>
+        </label>
+        <input type="range" class="slider" id="cooldown-${triggerId}"
+          min="100" max="3000" step="50"
+          value="${cfg.cooldown ?? 500}">
+      </div>
 
-    <div class="field-group">
-      <label class="field-label" for="volume-${triggerId}">
-        Volume
-        <span class="field-value" id="volume-val-${triggerId}">${Math.round((cfg.volume ?? 1) * 100)}%</span>
-      </label>
-      <input type="range" class="slider slider-volume" id="volume-${triggerId}"
-        min="0" max="100" step="1"
-        value="${Math.round((cfg.volume ?? 1) * 100)}">
-    </div>
+      <div class="card-divider"></div>
+      <div class="section-label">🔊 Sound</div>
 
-    <div class="field-group">
-      <label class="field-label" for="duration-${triggerId}">
-        Play duration
-        <span class="field-value" id="duration-val-${triggerId}">${(cfg.duration ?? 0) === 0 ? 'Full' : (cfg.duration ?? 0) + ' ms'}</span>
-      </label>
-      <input type="range" class="slider" id="duration-${triggerId}"
-        min="0" max="5000" step="100"
-        value="${cfg.duration ?? 0}">
-    </div>
+      <div class="field-group">
+        <label class="field-label" for="volume-${triggerId}">
+          Volume
+          <span class="field-value" id="volume-val-${triggerId}">${Math.round((cfg.volume ?? 1) * 100)}%</span>
+        </label>
+        <input type="range" class="slider slider-volume" id="volume-${triggerId}"
+          min="0" max="100" step="1"
+          value="${Math.round((cfg.volume ?? 1) * 100)}">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="duration-${triggerId}">
+          Play duration
+          <span class="field-value" id="duration-val-${triggerId}">${(cfg.duration ?? 0) === 0 ? 'Full' : (cfg.duration ?? 0) + ' ms'}</span>
+        </label>
+        <input type="range" class="slider" id="duration-${triggerId}"
+          min="0" max="5000" step="100"
+          value="${cfg.duration ?? 0}">
+      </div>
 
     <div class="sound-row">
       <span class="sound-name" id="sound-name-${triggerId}">${cfg.soundPath ? cfg.soundPath.split(/[\\/]/).pop() : 'Default sound'}</span>
@@ -140,12 +143,17 @@ function buildCard(triggerId, meta, cfg) {
         <button class="btn btn-secondary btn-reset" data-trigger="${triggerId}">Reset</button>
         <button class="btn btn-accent btn-preview" data-trigger="${triggerId}">▶ Play</button>
       </div>
-    </div>
 
-    <div class="activity-bar-wrap">
-      <div class="activity-bar" id="activity-${triggerId}"></div>
+      <div class="activity-bar-wrap">
+        <div class="activity-bar" id="activity-${triggerId}"></div>
+      </div>
     </div>
   `;
+
+  // Wire header click to toggle collapse
+  card.querySelector('.card-header').addEventListener('click', () => {
+    card.classList.toggle('open');
+  });
 
   return card;
 }
@@ -304,12 +312,115 @@ async function init() {
   // Load all sounds after UI is built
   await window._soundPlayer.loadAll(settings);
 
+  // ── Background panel ─────────────────────────────────────────────────────
+  await initBackground();
+
   // Listen for trigger events from main process
   window.electronAPI.onTrigger((triggerId, _data) => {
     if (settings[triggerId]?.enabled !== false) {
       window._soundPlayer.play(triggerId);
       flashActivity(triggerId);
     }
+  });
+}
+
+// ── Background ────────────────────────────────────────────────────────────────
+
+async function applyBackground(bg) {
+  const layer   = document.getElementById('bg-layer');
+  const overlay = document.getElementById('bg-overlay');
+  const preview = document.getElementById('bg-preview');
+
+  let imagePath = bg?.imagePath ?? null;
+  const opacity = bg?.opacity   ?? 0.25;
+  const blur    = bg?.blur      ?? 0;
+  const fit     = bg?.fit       ?? 'cover';
+
+  // Resolve relative paths (e.g. assets/bg.png) via main process
+  if (imagePath && !imagePath.match(/^[A-Za-z]:[\\\/]/) && !imagePath.startsWith('/')) {
+    imagePath = await window.electronAPI.resolveAssetPath(imagePath);
+  }
+
+  overlay.style.opacity = imagePath ? opacity : 1;
+
+  if (imagePath) {
+    const url = `file:///${imagePath.replace(/\\/g, '/')}`;
+    layer.style.backgroundImage = `url("${url}")`;
+    layer.style.filter          = blur > 0 ? `blur(${blur}px)` : '';
+    layer.style.backgroundSize  = fit === 'stretch' ? '100% 100%' : fit === 'center' ? 'auto' : fit;
+    preview.innerHTML = `<img src="${url}" alt="bg preview">`;
+  } else {
+    layer.style.backgroundImage = '';
+    layer.style.filter          = '';
+    preview.innerHTML = '<span class="bg-preview-placeholder">No background set</span>';
+  }
+}
+
+async function initBackground() {
+  let bg = await window.electronAPI.getBackground();
+  bg = bg ?? {};
+
+  // Toggle collapse
+  document.getElementById('bg-panel-title').addEventListener('click', () => {
+    document.getElementById('bg-panel').classList.toggle('open');
+  });
+
+  // Sync UI controls to stored values
+  const opacitySlider = document.getElementById('bg-opacity');
+  const blurSlider    = document.getElementById('bg-blur');
+  const fitSelect     = document.getElementById('bg-fit');
+  const opacityVal    = document.getElementById('bg-opacity-val');
+  const blurVal       = document.getElementById('bg-blur-val');
+  const fitVal        = document.getElementById('bg-fit-val');
+
+  const storedOpacity = Math.round((1 - (bg.opacity ?? 0.25)) * 100); // darkness = 1 - overlay opacity
+  opacitySlider.value = storedOpacity;
+  opacityVal.textContent = storedOpacity + '%';
+  blurSlider.value   = bg.blur ?? 0;
+  blurVal.textContent = (bg.blur ?? 0) + 'px';
+  fitSelect.value    = bg.fit ?? 'cover';
+  fitVal.textContent = fitSelect.options[fitSelect.selectedIndex]?.text ?? 'Cover';
+
+  await applyBackground(bg);
+
+  async function saveBg() {
+    bg.opacity = 1 - (Number(opacitySlider.value) / 100);
+    bg.blur    = Number(blurSlider.value);
+    bg.fit     = fitSelect.value;
+    await window.electronAPI.saveBackground(bg);
+    await applyBackground(bg);
+  }
+
+  opacitySlider.addEventListener('input', () => {
+    opacityVal.textContent = opacitySlider.value + '%';
+    bg.opacity = 1 - (Number(opacitySlider.value) / 100);
+    applyBackground(bg);
+  });
+  opacitySlider.addEventListener('change', saveBg);
+
+  blurSlider.addEventListener('input', () => {
+    blurVal.textContent = blurSlider.value + 'px';
+    bg.blur = Number(blurSlider.value);
+    applyBackground(bg);
+  });
+  blurSlider.addEventListener('change', saveBg);
+
+  fitSelect.addEventListener('change', () => {
+    fitVal.textContent = fitSelect.options[fitSelect.selectedIndex]?.text ?? '';
+    saveBg();
+  });
+
+  document.getElementById('bg-browse').addEventListener('click', async () => {
+    const p = await window.electronAPI.selectBgImage();
+    if (p) {
+      bg.imagePath = p;
+      await saveBg();
+    }
+  });
+
+  document.getElementById('bg-clear').addEventListener('click', async () => {
+    bg.imagePath = null;
+    await saveBg();
   });
 }
 

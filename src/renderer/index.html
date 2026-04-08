@@ -394,12 +394,126 @@
     }
     .notice.visible { display: block; }
 
+    /* ── Card collapse ── */
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease;
+      margin-top: 0;
+    }
+    .card.open .card-body {
+      max-height: 800px;
+      opacity: 1;
+      margin-top: 2px;
+    }
+    .card-header { cursor: pointer; }
+    .card-chevron {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      transition: transform 0.3s;
+      margin-left: 6px;
+      -webkit-text-fill-color: initial;
+    }
+    .card.open .card-chevron { transform: rotate(180deg); }
+
+    /* ── Background image layer ── */
+    #bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: opacity 0.4s, filter 0.4s;
+    }
+    #bg-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: var(--bg);
+      transition: opacity 0.4s;
+    }
+
+    /* ── Background panel ── */
+    .bg-panel {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      border: 1px solid #ffffff11;
+    }
+    .bg-panel-title {
+      font-family: 'Arial Black', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    .bg-panel-title .card-chevron {
+      -webkit-text-fill-color: var(--text-dim);
+    }
+    .bg-panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease;
+      margin-top: 0;
+    }
+    .bg-panel.open .bg-panel-body {
+      max-height: 600px;
+      opacity: 1;
+      margin-top: 2px;
+    }
+    .bg-panel.open .bg-panel-title .card-chevron { transform: rotate(180deg); }
+    .bg-preview {
+      width: 100%;
+      height: 80px;
+      border-radius: 8px;
+      background: #ffffff08;
+      border: 1px dashed #ffffff22;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      overflow: hidden;
+      position: relative;
+    }
+    .bg-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 7px;
+    }
+    .bg-preview .bg-preview-placeholder { pointer-events: none; }
+
     /* ── Scrollbar for webkit ── */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 4px; }
   </style>
 </head>
 <body>
+  <div id="bg-overlay"></div>
+  <div id="bg-layer"></div>
+
   <header>
     <span class="header-skull">💀</span>
     <h1>SmashMoans</h1>
@@ -411,6 +525,49 @@
 
   <main>
     <div class="notice" id="platform-notice"></div>
+
+    <!-- Background customization panel -->
+    <div class="bg-panel" id="bg-panel">
+      <div class="bg-panel-title" id="bg-panel-title">
+        🖼 Background
+        <span class="card-chevron">▼</span>
+      </div>
+      <div class="bg-panel-body">
+        <div class="bg-preview" id="bg-preview">
+          <span class="bg-preview-placeholder">No background set</span>
+        </div>
+        <div class="sound-row">
+          <div class="sound-buttons">
+            <button class="btn btn-secondary" id="bg-browse">Choose Image…</button>
+            <button class="btn btn-secondary" id="bg-clear">Remove</button>
+          </div>
+        </div>
+      <div class="field-group">
+        <label class="field-label">Overlay darkness
+          <span class="field-value" id="bg-opacity-val">75%</span>
+        </label>
+        <input type="range" class="slider" id="bg-opacity" min="0" max="100" step="5" value="75">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Blur
+          <span class="field-value" id="bg-blur-val">0px</span>
+        </label>
+        <input type="range" class="slider" id="bg-blur" min="0" max="20" step="1" value="0">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Fit
+          <span class="field-value" id="bg-fit-val">Cover</span>
+        </label>
+        <select id="bg-fit" style="background:#1a1a2e;color:#f0f0ff;border:1px solid #ffffff22;border-radius:6px;padding:4px 8px;font-size:0.75rem;cursor:pointer;outline:none;">
+          <option value="cover">Cover (fill)</option>
+          <option value="contain">Contain (fit)</option>
+          <option value="center">Center (original size)</option>
+          <option value="stretch">Stretch</option>
+        </select>
+      </div>
+      </div><!-- end bg-panel-body -->
+    </div><!-- end bg-panel -->
+
     <div id="cards-container"></div>
   </main>
 
