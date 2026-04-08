@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; media-src 'self' file:; connect-src 'none';">
+  <title>SmashMoans</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #0d0d18;
+      --card:      #10101e;
+      --pink:      #ff0080;
+      --purple:    #9400ff;
+      --cyan:      #00ffe7;
+      --yellow:    #ffe600;
+      --green:     #00ff94;
+      --text:      #f0f0ff;
+      --text-dim:  #6b6b99;
+      --radius:    14px;
+      --glow-pink: 0 0 12px #ff008088, 0 0 30px #ff008044;
+      --glow-cyan: 0 0 12px #00ffe788, 0 0 30px #00ffe744;
+    }
+
+    /* ── Body + noise grain ── */
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Screen flash on trigger ── */
+    @keyframes screenFlash {
+      0%   { box-shadow: inset 0 0 0 0 transparent; }
+      15%  { box-shadow: inset 0 0 80px 30px #ff008055; }
+      100% { box-shadow: inset 0 0 0 0 transparent; }
+    }
+    body.screen-flash {
+      animation: screenFlash 0.4s ease-out forwards;
+    }
+
+    /* ── Header ── */
+    header {
+      position: relative;
+      background: var(--surface);
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 2px solid transparent;
+      border-image: linear-gradient(90deg, var(--pink), var(--purple), var(--cyan)) 1;
+      user-select: none;
+      -webkit-app-region: drag;
+      z-index: 10;
+    }
+    header h1 {
+      font-family: 'Black Ops One', 'Arial Black', sans-serif;
+      font-size: 1.55rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--pink), var(--purple), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 8px #ff008066);
+    }
+    .header-skull {
+      font-size: 1.5rem;
+      animation: spin 4s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      0%   { transform: rotate(0deg) scale(1); }
+      50%  { transform: rotate(180deg) scale(1.2); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      -webkit-app-region: no-drag;
+    }
+    .badge {
+      font-size: 0.6rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 20px;
+      box-shadow: var(--glow-pink);
+    }
+    .badge-live {
+      font-size: 0.6rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: var(--green);
+      color: #000;
+      padding: 3px 10px;
+      border-radius: 20px;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.5; }
+    }
+
+    /* ── Main scroll area ── */
+    main {
+      flex: 1;
+      padding: 18px 18px 36px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    main::-webkit-scrollbar { width: 5px; }
+    main::-webkit-scrollbar-track { background: transparent; }
+    main::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 4px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px 18px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      border: 1px solid #ffffff11;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      overflow: visible;
+    }
+    .card:has(.toggle-input:checked) {
+      border-color: var(--pink);
+      box-shadow: 0 0 18px #ff008033, inset 0 0 30px #ff00080a;
+    }
+    .card:not(:has(.toggle-input:checked)) {
+      opacity: 0.72;
+      filter: saturate(0.4);
+    }
+
+    /* Card shake on trigger */
+    @keyframes cardShake {
+      0%   { transform: translate(0,0) rotate(0); }
+      15%  { transform: translate(-4px, 2px) rotate(-1.5deg); }
+      30%  { transform: translate(4px, -2px) rotate(1.5deg); }
+      45%  { transform: translate(-3px, 1px) rotate(-1deg); }
+      60%  { transform: translate(3px, -1px) rotate(0.5deg); }
+      80%  { transform: translate(-1px, 0px) rotate(0); }
+      100% { transform: translate(0,0) rotate(0); }
+    }
+    .card-shake { animation: cardShake 0.35s ease-out; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Arial Black', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #fff 60%, var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-icon {
+      font-size: 1.35rem;
+      -webkit-text-fill-color: initial;
+      filter: drop-shadow(0 0 6px #ff008099);
+    }
+    .card-desc {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    /* ── Toggle ── */
+    .toggle { position: relative; display: inline-block; width: 48px; height: 26px; cursor: pointer; }
+    .toggle-input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: #1e1e3a;
+      border-radius: 26px;
+      border: 1px solid #333;
+      transition: all 0.2s;
+    }
+    .toggle-slider::after {
+      content: '';
+      position: absolute;
+      width: 19px; height: 19px;
+      background: #555;
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-input:checked + .toggle-slider {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      border-color: var(--pink);
+      box-shadow: var(--glow-pink);
+    }
+    .toggle-input:checked + .toggle-slider::after {
+      transform: translateX(22px);
+      background: #fff;
+      box-shadow: 0 0 8px #fff8;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.63rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: -4px;
+    }
+
+    /* ── Field group ── */
+    .field-group { display: flex; flex-direction: column; gap: 5px; }
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      letter-spacing: 0.3px;
+    }
+    .field-value {
+      color: var(--cyan);
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-shadow: 0 0 8px var(--cyan);
+    }
+
+    .slider {
+      width: 100%;
+      height: 3px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: linear-gradient(90deg, var(--purple) var(--pct, 30%), #ffffff18 var(--pct, 30%));
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px; height: 15px;
+      background: var(--pink);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--pink), 0 0 20px #ff008055;
+      transition: transform 0.15s;
+    }
+    .slider::-webkit-slider-thumb:hover { transform: scale(1.4); }
+    .slider:active::-webkit-slider-thumb { transform: scale(1.6); }
+
+    /* ── Divider ── */
+    .card-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--purple), transparent);
+      opacity: 0.3;
+      margin: 0 -4px;
+    }
+
+    /* ── Sound row ── */
+    .sound-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sound-name {
+      flex: 1;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+      font-style: italic;
+    }
+    .sound-buttons { display: flex; gap: 5px; }
+
+    /* ── Buttons ── */
+    .btn {
+      border: none;
+      border-radius: 6px;
+      padding: 5px 11px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+    }
+    .btn:active { transform: scale(0.9) !important; }
+
+    .btn-secondary {
+      background: #ffffff0d;
+      color: var(--text-dim);
+      border: 1px solid #ffffff18;
+    }
+    .btn-secondary:hover {
+      background: #ffffff1a;
+      color: #fff;
+      border-color: var(--purple);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff;
+      box-shadow: 0 0 12px #ff008055;
+      border: 1px solid transparent;
+    }
+    .btn-accent:hover {
+      box-shadow: var(--glow-pink);
+      transform: scale(1.05);
+    }
+
+    /* ── Activity bar ── */
+    .activity-bar-wrap {
+      height: 3px;
+      background: #ffffff0a;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .activity-bar {
+      height: 100%;
+      width: 0;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--pink), var(--cyan));
+    }
+    @keyframes triggerFlash {
+      0%   { width: 100%; opacity: 1; box-shadow: 0 0 10px var(--pink); }
+      60%  { width: 40%; opacity: 0.8; }
+      100% { width: 0%;  opacity: 0; }
+    }
+    .activity-bar.active {
+      animation: triggerFlash 0.6s ease-out forwards;
+    }
+
+    /* ── Floating emoji burst ── */
+    @keyframes emojiFly {
+      0%   { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-70px) scale(1.8) rotate(30deg); opacity: 0; }
+    }
+    .emoji-burst {
+      position: absolute;
+      font-size: 1.5rem;
+      pointer-events: none;
+      animation: emojiFly 0.7s ease-out forwards;
+      z-index: 100;
+      user-select: none;
+    }
+
+    /* ── Platform notices ── */
+    .notice {
+      background: #ffe60012;
+      border: 1px solid #ffe60033;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.72rem;
+      color: var(--yellow);
+      line-height: 1.5;
+      display: none;
+    }
+    .notice.visible { display: block; }
+
+    /* ── Scrollbar for webkit ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="header-skull">💀</span>
+    <h1>SmashMoans</h1>
+    <div class="header-right">
+      <span class="badge-live">● LIVE</span>
+      <span class="badge">Settings</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="notice" id="platform-notice"></div>
+    <div id="cards-container"></div>
+  </main>
+
+  <script src="../../node_modules/howler/dist/howler.min.js"></script>
+  <script src="soundPlayer.js"></script>
+  <script src="settings.js"></script>
+
+  <script>
+    (function () {
+      const notice = document.getElementById('platform-notice');
+      if (navigator.platform.startsWith('Linux')) {
+        notice.textContent = '⚠ Linux: Global input hooks require X11. Launch with XDG_SESSION_TYPE=x11 on Wayland.';
+        notice.classList.add('visible');
+      } else if (navigator.platform.startsWith('Win')) {
+        notice.textContent = '⚠ Windows: Your antivirus may throw a tantrum about this app. It\'s a false positive. We promise.';
+        notice.classList.add('visible');
+      }
+    })();
+  </script>
+</body>
+</html>

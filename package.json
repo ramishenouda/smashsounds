@@ -1,0 +1,44 @@
+{
+  "name": "smashmoans",
+  "version": "1.0.0",
+  "description": "Desktop app that plays custom sounds when you rage at your computer",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "generate:sounds": "node scripts/generate-sounds.js",
+    "generate:icons": "node scripts/generate-icon.js",
+    "generate:assets": "node scripts/generate-sounds.js && node scripts/generate-icon.js"
+  },
+  "dependencies": {
+    "electron-store": "^11.0.0",
+    "howler": "^2.2.4",
+    "uiohook-napi": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.smashmoans.app",
+    "productName": "SmashMoans",
+    "files": [
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icons/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icons/icon.icns",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "assets/icons/icon.png"
+    }
+  }
+}
