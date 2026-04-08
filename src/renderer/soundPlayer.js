@@ -14,6 +14,11 @@ const _sounds = {};
 const _durations = {};
 // Pending stop-timers keyed by triggerId
 const _stopTimers = {};
+// Global playback lock — true while any sound is playing
+let _busy = false;
+
+function _setBusy(val) { _busy = val; }
+function isBusy() { return _busy; }
 
 async function _resolvePath(p) {
   if (!p) return null;
@@ -41,7 +46,9 @@ async function load(triggerId, customPath, volume = 1) {
       onloaderror: (_id, err) => {
         console.warn(`[SmashMoans] Failed to load sound for ${triggerId}: ${err}`);
         resolve(null);
-      }
+      },
+      onend:  () => _setBusy(false),
+      onstop: () => _setBusy(false)
     });
     _sounds[triggerId] = howl;
   });
@@ -65,13 +72,14 @@ function play(triggerId) {
     delete _stopTimers[triggerId];
   }
 
+  _setBusy(true);
   howl.stop();
   howl.play();
 
   const duration = _durations[triggerId] ?? 0;
   if (duration > 0) {
     _stopTimers[triggerId] = setTimeout(() => {
-      howl.stop();
+      howl.stop(); // triggers onstop → _setBusy(false)
       delete _stopTimers[triggerId];
     }, duration);
   }
@@ -96,4 +104,4 @@ function setDuration(triggerId, durationMs) {
   _durations[triggerId] = durationMs;
 }
 
-window._soundPlayer = { loadAll, play, reloadTrigger, setVolume, setDuration };
+window._soundPlayer = { loadAll, play, reloadTrigger, setVolume, setDuration, isBusy };

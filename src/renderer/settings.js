@@ -317,7 +317,7 @@ async function init() {
 
   // Listen for trigger events from main process
   window.electronAPI.onTrigger((triggerId, _data) => {
-    if (settings[triggerId]?.enabled !== false) {
+    if (settings[triggerId]?.enabled !== false && !window._soundPlayer.isBusy()) {
       window._soundPlayer.play(triggerId);
       flashActivity(triggerId);
     }

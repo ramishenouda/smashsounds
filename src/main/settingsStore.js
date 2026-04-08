@@ -33,7 +33,7 @@ const schema = {
         type: 'object',
         properties: {
           enabled:   { type: 'boolean', default: true },
-          threshold: { type: 'number',  default: 2500 },
+          threshold: { type: 'number',  default: 3 },
           cooldown:  { type: 'number',  default: 2000 },
           volume:    { type: 'number',  default: 1.0 },
           duration:  { type: 'number',  default: 0 },
@@ -73,6 +73,14 @@ const schema = {
 };
 
 const store = new Store({ schema });
+
+// Repair incorrectly persisted mouseSmash threshold (was defaulting to 2500 instead of 3)
+{
+  const t = store.get('triggers.mouseSmash.threshold');
+  if (typeof t === 'number' && t > 6) {
+    store.set('triggers.mouseSmash.threshold', 3);
+  }
+}
 
 function getBackground() {
   return store.get('background');

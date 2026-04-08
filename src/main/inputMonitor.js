@@ -7,6 +7,7 @@ const KeyboardSmashDetector = require('./detectors/keyboardSmashDetector');
 const ClickSpamDetector     = require('./detectors/clickSpamDetector');
 
 let onTriggerCallback = null;
+const _heldKeys = new Set();
 
 function dispatchTrigger(triggerId, data) {
   if (onTriggerCallback) {
@@ -37,11 +38,14 @@ function start(triggerCallback) {
   });
 
   uIOhook.on('keydown', (e) => {
+    if (_heldKeys.has(e.keycode)) return; // ignore key-repeat while held
+    _heldKeys.add(e.keycode);
     kbDetector.handleKeyDown();
     smashDetector.handleKeyDown(e.keycode);
   });
 
   uIOhook.on('keyup', (e) => {
+    _heldKeys.delete(e.keycode);
     smashDetector.handleKeyUp(e.keycode);
   });
 

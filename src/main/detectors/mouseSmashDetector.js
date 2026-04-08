@@ -8,7 +8,7 @@ const settings = require('../settingsStore');
  *  2. DUAL CLICK: left + right mouse buttons both down within DUAL_CLICK_MS.
  */
 
-const KEYS_WINDOW_MS = 150;
+const KEYS_WINDOW_MS = 400;
 const DUAL_CLICK_MS  = 200;
 
 class MouseSmashDetector {
